@@ -9,6 +9,6 @@ inline nwa::PluginInfo makePluginInfo()
     i.name = "MELODY//STUDIO";
     i.instrument = true;
     i.phase = 3;
-    i.summary = "chord, melody and acid generators, Make a Track and MIDI file export.";
+    i.summary = "chord, melody, bass, arpeggio and acid generators, Make a Track and MIDI file export.";
     return i;
 }

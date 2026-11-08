@@ -5,11 +5,11 @@ Produktfamilie aus vier eigenständigen VST3-Plugins für FL Studio (Windows x64
 | Plugin | Rolle | Stand |
 |---|---|---|
 | **RAVE//STATION** (`RAVE-STATION.vst3`) | Drum Machine, Break Slicer, Breakbeat Generator | Phase 2 – **Funktionsumfang vorhanden, unter Linux getestet, Windows/FL offen** (siehe `plugins/RaveStation/README.md`) |
-| **MELODY//STUDIO** (`MELODY-STUDIO.vst3`) | Akkord-, Melodie-, Bass- und Acid-Generator | Phase 3 – **nur Fundament**, keine Funktionen |
+| **MELODY//STUDIO** (`MELODY-STUDIO.vst3`) | Akkord-, Melodie-, Bass- und Acid-Generator | Phase 3 – **Funktionsumfang vorhanden, unter Linux getestet, Windows/FL offen** (siehe `plugins/MelodyStudio/README.md`) |
 | **SPACE//FX** (`SPACE-FX.vst3`) | Delay + Reverb | Phase 4 – **nur Fundament**, keine Funktionen |
 | **NEO//WAVE** (`NEOWAVE.vst3`) | Synthesizer | Funktionsumfang vorhanden (siehe `plugins/NeoWave/README.md`), Abgleich mit der Spezifikation in Phase 5 |
 
-## Stand Phase 1 (Fundament; weiterhin gültig für MELODY//STUDIO und SPACE//FX)
+## Stand Phase 1 (Fundament; weiterhin gültig für SPACE//FX)
 
 **Vorhanden und automatisch getestet (Linux):**
 - Monorepo-Struktur, ein Build für alle Plugins, gemeinsames Fundament `core/` (State, Presets, Hilfsfunktionen, Basis-GUI, Plugin-Grundgerüst).
@@ -24,7 +24,7 @@ Produktfamilie aus vier eigenständigen VST3-Plugins für FL Studio (Windows x64
 - **Nicht in FL Studio getestet** (Scan, Laden, Tempo, Automation, Projekt-Wiederherstellung). Dafür gibt es `docs/FL_STUDIO_TESTLISTE.md`.
 - Nicht mit pluginval validiert.
 - Klang wurde nie gehört; das Fundament erzeugt ohnehin nur einen Testton.
-- **Nicht vorhanden:** Sämtliche Funktionen von MELODY//STUDIO und SPACE//FX (Phasen 3–4). RAVE//STATION: siehe eigenes README.
+- **Nicht vorhanden:** Sämtliche Funktionen von SPACE//FX (Phase 4). RAVE//STATION: siehe eigenes README.
 - NEO//WAVE nutzt `core/` noch nicht; es ist ein unverändert eingehängtes Plugin.
 
 Plan, Architektur und Risiken: `docs/PLAN.md`.
