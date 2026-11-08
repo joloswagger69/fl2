@@ -12,7 +12,7 @@ permissions:
 
 env:
   PLUGIN_TARGETS: RaveStation_VST3 MelodyStudio_VST3 SpaceFX_VST3 NeoWave_VST3
-  TEST_TARGETS: FoundationTest NeoWaveTest RaveTest RaveProcessorTest
+  TEST_TARGETS: FoundationTest NeoWaveTest RaveTest RaveProcessorTest MelodyTest MelodyProcessorTest
 
 jobs:
   windows:
@@ -72,7 +72,7 @@ jobs:
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
-        run: cmake --build build --parallel --target ${{ env.PLUGIN_TARGETS }} ${{ env.TEST_TARGETS }} RaveShot
+        run: cmake --build build --parallel --target ${{ env.PLUGIN_TARGETS }} ${{ env.TEST_TARGETS }} RaveShot MelodyShot
       - name: Run tests
         run: xvfb-run -a ctest --test-dir build --output-on-failure
 
