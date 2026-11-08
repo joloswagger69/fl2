@@ -1,0 +1,111 @@
+name: Build
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PLUGIN_TARGETS: RaveStation_VST3 MelodyStudio_VST3 SpaceFX_VST3 NeoWave_VST3
+  TEST_TARGETS: FoundationTest NeoWaveTest RaveTest RaveProcessorTest
+
+jobs:
+  windows:
+    name: Windows x64 (MSVC)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        # Kein fester Generator: CMake nimmt die auf dem Runner installierte Visual-Studio-Version
+        run: cmake -B build -A x64
+
+      - name: Build VST3 plugins
+        run: cmake --build build --config Release --parallel --target ${{ env.PLUGIN_TARGETS }}
+
+      - name: Build tests
+        run: cmake --build build --config Release --parallel --target ${{ env.TEST_TARGETS }}
+
+      - name: Run tests
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Upload RAVE-STATION
+        uses: actions/upload-artifact@v4
+        with:
+          name: RAVE-STATION-win64-vst3
+          path: build/plugins/RaveStation/RaveStation_artefacts/Release/VST3/RAVE-STATION.vst3
+          if-no-files-found: error
+      - name: Upload MELODY-STUDIO
+        uses: actions/upload-artifact@v4
+        with:
+          name: MELODY-STUDIO-win64-vst3
+          path: build/plugins/MelodyStudio/MelodyStudio_artefacts/Release/VST3/MELODY-STUDIO.vst3
+          if-no-files-found: error
+      - name: Upload SPACE-FX
+        uses: actions/upload-artifact@v4
+        with:
+          name: SPACE-FX-win64-vst3
+          path: build/plugins/SpaceFX/SpaceFX_artefacts/Release/VST3/SPACE-FX.vst3
+          if-no-files-found: error
+      - name: Upload NEOWAVE
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEOWAVE-win64-vst3
+          path: build/plugins/NeoWave/NeoWave_artefacts/Release/VST3/NEOWAVE.vst3
+          if-no-files-found: error
+
+  linux:
+    name: Linux (build + tests, reference)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev \
+            libfreetype-dev libfontconfig1-dev libgl1-mesa-dev xvfb
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel --target ${{ env.PLUGIN_TARGETS }} ${{ env.TEST_TARGETS }} RaveShot
+      - name: Run tests
+        run: xvfb-run -a ctest --test-dir build --output-on-failure
+
+  release:
+    name: Release (tags v*)
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ windows, linux ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tag must match the CMake project version
+        run: |
+          v=$(grep -E '^project\(NeoWaveAudio VERSION' CMakeLists.txt | sed -E 's/.*VERSION ([0-9.]+).*/\1/')
+          if [ "v$v" != "${GITHUB_REF_NAME}" ]; then echo "Tag ${GITHUB_REF_NAME} does not match project version v$v"; exit 1; fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Zip each plugin
+        run: |
+          mkdir release
+          for d in artifacts/*-win64-vst3; do
+            name=$(basename "$d")
+            (cd "$d" && zip -qr "../../release/${name}-${GITHUB_REF_NAME}.zip" .)
+          done
+          ls -la release
+          for z in release/*.zip; do test -s "$z" || { echo "empty release file $z"; exit 1; }; done
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*.zip
+          generate_release_notes: true
