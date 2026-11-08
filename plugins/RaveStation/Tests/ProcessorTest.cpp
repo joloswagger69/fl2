@@ -32,7 +32,15 @@ static std::vector<float> run(RaveProcessor& p, int total, int blk, const std::v
 }
 static int activeSamples(const std::vector<float>& x, float thr = 0.002f) { int last = 0; for (size_t i = 0; i < x.size(); ++i) if (std::abs(x[i]) > thr) last = (int) i; return last; }
 
+static int realMain();
 int main()
+{
+    // Testobjekte (RaveProcessor ~400 KB) liegen hier auf dem Stack; Windows hat nur 1 MB -> grosser Thread-Stack
+    struct Runner : juce::Thread { int rc = 1; Runner() : juce::Thread("test", 64u * 1024u * 1024u) {} void run() override { rc = realMain(); } } r;
+    r.startThread(); r.waitForThreadToExit(-1); return r.rc;
+}
+
+static int realMain()
 {
     juce::MessageManager::getInstance();
     {

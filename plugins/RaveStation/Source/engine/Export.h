@@ -1,5 +1,6 @@
 #pragma once
 // Offline-Rendering und Export: Pattern -> Audio (selbe Engine wie live, deshalb dasselbe Ergebnis), Pad-Bounce, MIDI.
+#include <memory>
 #include "Engine.h"
 #include "Morph.h"
 #include "Generator.h"
@@ -17,8 +18,9 @@ struct PadSetup
 inline juce::AudioBuffer<float> renderPattern(const PlainPattern& pat, const std::array<PadSetup, kPads>& setup, GlobalParams g, int loops,
                                               double sr, bool wrapTail, int onlyPad = -1)
 {
-    PatternBank bank; bank.store(0, pat);
-    RaveEngine eng(bank);
+    // Auf dem Heap: Bank + Engine sind zusammen ~360 KB; auf dem Stack (Windows: 1 MB) waere das gefaehrlich
+    auto bankPtr = std::make_unique<PatternBank>(); PatternBank& bank = *bankPtr; bank.store(0, pat);
+    auto engPtr = std::make_unique<RaveEngine>(bank); RaveEngine& eng = *engPtr;
     constexpr int blk = 512;
     eng.prepare(sr, blk);
     PadParams pads[kPads];

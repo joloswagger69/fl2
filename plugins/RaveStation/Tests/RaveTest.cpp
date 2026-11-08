@@ -485,7 +485,15 @@ static void testEvolve()
     CHECK(gen::evolve(empty, 0.9f, 1, rm, 16).length == 16, "leeres Pattern");
 }
 
+static int realMain();
 int main()
+{
+    // Testobjekte (RaveProcessor ~400 KB) liegen hier auf dem Stack; Windows hat nur 1 MB -> grosser Thread-Stack
+    struct Runner : juce::Thread { int rc = 1; Runner() : juce::Thread("test", 64u * 1024u * 1024u) {} void run() override { rc = realMain(); } } r;
+    r.startThread(); r.waitForThreadToExit(-1); return r.rc;
+}
+
+static int realMain()
 {
     juce::MessageManager::getInstance(); struct Guard { ~Guard() { juce::DeletedAtShutdown::deleteAll(); juce::MessageManager::deleteInstance(); } } guard;
     testSimpleVoice(); testTimingBlockIndependent(); testPatternLoops(); testSwing(); testRatchet();
